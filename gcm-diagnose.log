@@ -1,0 +1,169 @@
+﻿Diagnose log at 2026-02-25T18:12:09Z
+
+AppPath: C:\Program Files\Git\mingw64\bin\git-credential-manager.exe
+InstallDir: C:\Program Files\Git\mingw64\bin\
+Version: 2.7.0+d1dd8a4ded75a2b1faae653157ac1699609442ad
+
+------------
+Diagnostic: Environment
+Skipped: False
+Success: True
+Exception: None
+Log:
+OSType: Windows
+OSVersion: 10.0 (build 19045)
+Reading environment variables... OK
+ Variables:
+SystemDrive=C:
+ProgramFiles(x86)=C:\Program Files (x86)
+MSYSTEM=MINGW64
+ProgramW6432=C:\Program Files
+PROCESSOR_IDENTIFIER=Intel64 Family 6 Model 154 Stepping 3, GenuineIntel
+TMP=C:\Temp
+PROCESSOR_ARCHITECTURE=AMD64
+PATHEXT=.COM;.EXE;.BAT;.CMD;.VBS;.VBE;.JS;.JSE;.WSF;.WSH;.MSC;.CPL
+USERPROFILE=C:\Users\wumx
+PROCESSOR_REVISION=9a03
+TEMP=C:\Temp
+FPS_BROWSER_APP_PROFILE_STRING=Internet Explorer
+FPS_BROWSER_USER_PROFILE_STRING=Default
+LOGONSERVER=\\HOME-PC
+TERM=xterm-256color
+USERNAME=wumx
+SystemRoot=C:\Windows
+CODEX_THREAD_ID=019c95c4-9942-7c91-9652-2ba415080c94
+PLINK_PROTOCOL=ssh
+PATH=C:/Program Files/Git/mingw64/libexec/git-core;C:\Program Files\Git\mingw64\bin;C:\Program Files\Git\usr\bin;C:\Users\wumx\bin;C:\Users\wumx\.codex\tmp\arg0\codex-arg0rB26dM;C:\Users\wumx\AppData\Roaming\npm\node_modules\@openai\codex\node_modules\@openai\codex-win32-x64\vendor\x86_64-pc-windows-msvc\path;C:\Program Files\Microsoft\jdk-21.0.10.7-hotspot\bin;C:\Program Files (x86)\Common Files\Oracle\Java\java8path;C:\Program Files (x86)\Common Files\Oracle\Java\javapath;C:\Program Files\Zulu\zulu-21\bin\;D:\zulu\bin\;C:\Windows\system32;C:\Windows;C:\Windows\System32\Wbem;C:\Windows\System32\WindowsPowerShell\v1.0\;C:\Program Files\NVIDIA Corporation\NVIDIA App\NvDLISR;C:\Program Files (x86)\NVIDIA Corporation\PhysX\Common;C:\Program Files\dotnet\;C:\Program Files\nodejs\;C:\Program Files\Git\cmd;C:\Users\wumx\AppData\Local\Programs\Python\Python314\Scripts\;C:\Users\wumx\AppData\Local\Programs\Python\Python314\;C:\Users\wumx\AppData\Local\Programs\Python\Launcher\;C:\Users\wumx\AppData\Local\Microsoft\WindowsApps;C:\Users\wumx\AppData\Local\Python\bin;C:\Users\wumx\.dotnet\tools;C:\Users\wumx\AppData\Roaming\npm;D:\Windsurf\bin
+USERDOMAIN_ROAMINGPROFILE=HOME-PC
+CommonProgramFiles=C:\Program Files\Common Files
+CODEX_MANAGED_BY_NPM=1
+ProgramData=C:\ProgramData
+LC_CTYPE=C.UTF-8
+HOMEPATH=\Users\wumx
+COMPUTERNAME=HOME-PC
+ALLUSERSPROFILE=C:\ProgramData
+CommonProgramW6432=C:\Program Files\Common Files
+GIT_EXEC_PATH=C:/Program Files/Git/mingw64/libexec/git-core
+SESSIONNAME=Console
+DriverData=C:\Windows\System32\Drivers\DriverData
+HOMEDRIVE=C:
+windir=C:\Windows
+GIT_TRACE2_PARENT_SID=809361c7-a89c-4869-b826-302bc9239f45
+NUMBER_OF_PROCESSORS=20
+OS=Windows_NT
+ProgramFiles=C:\Program Files
+ComSpec=C:\Windows\system32\cmd.exe
+SOLARA_BOOTSTRAPPER=C:\Users\wumx\Desktop\solara\BootstrapperNew.exe
+HOME=C:\Users\wumx
+PSModulePath=C:\Users\wumx\Documents\WindowsPowerShell\Modules;C:\Program Files\WindowsPowerShell\Modules;C:\Windows\system32\WindowsPowerShell\v1.0\Modules
+CODEX_SANDBOX_NETWORK_DISABLED=1
+PROMPT=$P$G
+TMPDIR=C:\Temp
+APPDATA=C:\Users\wumx\AppData\Roaming
+USERDOMAIN=HOME-PC
+PROCESSOR_LEVEL=6
+LOCALAPPDATA=C:\Users\wumx\AppData\Local
+CommonProgramFiles(x86)=C:\Program Files (x86)\Common Files
+COLORTERM=truecolor
+PUBLIC=C:\Users\Public
+
+
+------------
+Diagnostic: File system
+Skipped: False
+Success: True
+Exception: None
+Log:
+Temporary directory is 'C:\Temp\'...
+Checking basic file I/O...
+Writing to temporary file 'C:\Temp\709342cc9e42e570fe644b82'... OK
+Reading from temporary file 'C:\Temp\709342cc9e42e570fe644b82'... OK
+Deleting temporary file 'C:\Temp\709342cc9e42e570fe644b82'... OK
+Testing IFileSystem instance...
+UserHomePath: C:\Users\wumx
+UserDataDirectoryPath: C:\Users\wumx\.gcm
+GetCurrentDirectory(): C:\Users\wumx\Desktop\HydraClientBro9i-master
+
+------------
+Diagnostic: Networking
+Skipped: False
+Success: True
+Exception: None
+Log:
+Checking networking and HTTP stack...
+Creating HTTP client... OK
+IsNetworkAvailable: True
+Sending HEAD request to http://example.com...Sending HEAD request to https://example.com... OK
+ OK
+Acquiring free TCP port... OK
+Testing local HTTP loopback connections...
+Creating new HTTP listener for http://localhost:54254/... OK
+Waiting for loopback connection... OK
+Writing response... OK
+Waiting for response data... OK
+Loopback connection data OK
+
+------------
+Diagnostic: Git
+Skipped: False
+Success: True
+Exception: None
+Log:
+Getting Git version... OK
+Git version is '2.53.0.windows.1'
+Locating current repository...Not inside a Git repository.
+ OK
+Listing all Git configuration... OK
+Git configuration:
+file:C:/Program Files/Git/etc/gitconfig	diff.astextplain.textconv=astextplain
+file:C:/Program Files/Git/etc/gitconfig	filter.lfs.clean=git-lfs clean -- %f
+file:C:/Program Files/Git/etc/gitconfig	filter.lfs.smudge=git-lfs smudge -- %f
+file:C:/Program Files/Git/etc/gitconfig	filter.lfs.process=git-lfs filter-process
+file:C:/Program Files/Git/etc/gitconfig	filter.lfs.required=true
+file:C:/Program Files/Git/etc/gitconfig	http.sslbackend=schannel
+file:C:/Program Files/Git/etc/gitconfig	core.autocrlf=true
+file:C:/Program Files/Git/etc/gitconfig	core.fscache=true
+file:C:/Program Files/Git/etc/gitconfig	core.symlinks=false
+file:C:/Program Files/Git/etc/gitconfig	pull.rebase=false
+file:C:/Program Files/Git/etc/gitconfig	credential.helper=manager
+file:C:/Program Files/Git/etc/gitconfig	credential.https://dev.azure.com.usehttppath=true
+file:C:/Program Files/Git/etc/gitconfig	init.defaultbranch=master
+file:C:/Users/wumx/.gitconfig	safe.directory=C:/Users/wumx/Desktop/HydraClient-main
+file:C:/Users/wumx/.gitconfig	safe.directory=C:/Users/wumx/Desktop/HydraClientBro9i-master/_repo
+
+
+------------
+Diagnostic: Credential storage
+Skipped: False
+Success: True
+Exception: None
+Log:
+ICredentialStore instance is of type: CredentialStore
+Writing test credential... OK
+Reading test credential... OK
+Deleting test credential... OK
+
+------------
+Diagnostic: Microsoft authentication (AAD/MSA)
+Skipped: False
+Success: True
+Exception: None
+Log:
+Broker is not enabled.
+Flow type is: Auto
+Gathering MSAL token cache data... OK
+CacheDirectory: C:\Users\wumx\AppData\Local\.IdentityService
+CacheFileName: msal.cache
+CacheFilePath: C:\Users\wumx\AppData\Local\.IdentityService\msal.cache
+Creating cache helper... OK
+Verifying MSAL token cache persistence... OK
+
+------------
+Diagnostic: GitHub API
+Skipped: False
+Success: True
+Exception: None
+Log:
+Using 'https://github.com/' as API target.
+Querying '/meta' endpoint... OK
+
