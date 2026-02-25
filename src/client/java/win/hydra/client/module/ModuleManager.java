@@ -5,6 +5,8 @@ import win.hydra.client.Client;
 import win.hydra.client.module.impl.combat.KillAura;
 import win.hydra.client.module.impl.hud.ClickGuiSettings;
 import win.hydra.client.module.impl.movement.Flight;
+import win.hydra.client.module.impl.player.GuiMove;
+import win.hydra.client.module.impl.misc.SelfDestruct;
 import win.hydra.client.screen.clickgui.Window;
 import org.lwjgl.glfw.GLFW;
 
@@ -48,13 +50,19 @@ public class ModuleManager {
         // Actual modules
         KillAura killAura = new KillAura();
         Flight flight = new Flight();
+        GuiMove guiMove = new GuiMove();
+        SelfDestruct selfDestruct = new SelfDestruct();
 
         modules.add(killAura);
         modules.add(flight);
+        modules.add(guiMove);
+        modules.add(selfDestruct);
 
         // Register modules that listen to events
         Client.inst().eventBus().register(killAura);
         Client.inst().eventBus().register(flight);
+        Client.inst().eventBus().register(guiMove);
+        Client.inst().eventBus().register(selfDestruct);
     }
 
     public List<Module> getModules() {
