@@ -12,6 +12,7 @@ import win.hydra.client.Client;
 import win.hydra.client.command.EzCommand;
 import win.hydra.client.event.Render2DEvent;
 import win.hydra.client.event.UpdateEvent;
+import win.hydra.client.hud.HudManager;
 import win.hydra.client.module.ModuleManager;
 import win.hydra.client.module.impl.misc.SelfDestruct;
 import win.hydra.client.screen.clickgui.Window;
@@ -23,6 +24,9 @@ public class HydraClient implements ClientModInitializer {
 	@Override
 	public void onInitializeClient() {
 		Client.inst();
+
+		// Регистрируем HUD менеджер
+		Client.inst().eventBus().register(HudManager.getInstance());
 
 		HudRenderCallback.EVENT.register((guiGraphics, deltaTracker) -> {
 			Client.inst().eventBus().post(new Render2DEvent(guiGraphics, 0.0F));

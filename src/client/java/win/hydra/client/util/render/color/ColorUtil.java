@@ -35,6 +35,20 @@ public class ColorUtil {
         int al = (int) (a.getAlpha() + (b.getAlpha() - a.getAlpha()) * t);
         return new Color(r, g, bl, al).getRGB();
     }
+
+    /**
+     * Осветляет цвет на указанный фактор.
+     * @param color цвет в формате ARGB
+     * @param factor фактор осветления (0.0f - 1.0f)
+     * @return осветлённый цвет
+     */
+    public static int brighter(int color, float factor) {
+        Color c = new Color(color, true);
+        int r = Math.min(255, (int) (c.getRed() + (255 - c.getRed()) * factor));
+        int g = Math.min(255, (int) (c.getGreen() + (255 - c.getGreen()) * factor));
+        int b = Math.min(255, (int) (c.getBlue() + (255 - c.getBlue()) * factor));
+        return new Color(r, g, b, c.getAlpha()).getRGB();
+    }
 }
 
 

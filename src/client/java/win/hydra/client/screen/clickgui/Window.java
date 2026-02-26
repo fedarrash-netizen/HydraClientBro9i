@@ -52,12 +52,16 @@ public class Window extends Screen {
     private float windowX;
     private float windowY;
     private boolean positioned = false;
+    private boolean closing = false;
 
     private boolean draggingWindow = false;
     private float dragOffsetX;
     private float dragOffsetY;
 
     private Category selectedCategory = Category.values().length > 0 ? Category.values()[0] : Category.HUD;
+    private Category previousCategory = selectedCategory;
+    private float categoryAnim = 1.0F;
+    private float categorySlide = 0.0F;
     private String searchQuery = "";
     private boolean searchFocused = false;
 
@@ -68,6 +72,8 @@ public class Window extends Screen {
     private float activeSliderLeft = 0.0F;
     private float activeSliderRight = 0.0F;
     private Module bindingModule = null;
+
+    private final java.util.Map<Module, Float> moduleExpandAnimations = new java.util.HashMap<>();
 
     public Window() {
         super(Component.literal("Hydra"));
@@ -93,9 +99,28 @@ public class Window extends Screen {
     }
 
     @Override
+    public void onClose() {
+        closing = true;
+    }
+
+    @Override
     public void render(GuiGraphics g, int mouseX, int mouseY, float delta) {
-        openAnim += (1.0F - openAnim) * 0.18F;
+        float targetOpen = closing ? 0.0F : 1.0F;
+        openAnim += (targetOpen - openAnim) * 0.25F;
+        if (openAnim < 0.001F) openAnim = 0.0F;
         if (openAnim > 0.999F) openAnim = 1.0F;
+
+        categoryAnim += (1.0F - categoryAnim) * 0.15F;
+        categorySlide += (0.0F - categorySlide) * 0.20F;
+
+        for (Module module : ModuleManager.getInstance().getAllModules()) {
+            if (expandedModules.contains(module)) {
+                moduleExpandAnimations.merge(module, 0.0F, (old, val) -> Math.min(old + 0.2F, 1.0F));
+            } else {
+                moduleExpandAnimations.merge(module, 1.0F, (old, val) -> Math.max(old - 0.2F, 0.0F));
+            }
+        }
+        moduleExpandAnimations.entrySet().removeIf(e -> e.getValue() <= 0.0F);
 
         scroll += (targetScroll - scroll) * 0.30F;
         clampScroll();
@@ -106,6 +131,12 @@ public class Window extends Screen {
         }
         renderBackdrop(g);
         renderWindow(g, mouseX, mouseY);
+
+        if (closing && openAnim <= 0.01F) {
+            mc.setScreen(null);
+            return;
+        }
+
         super.render(g, mouseX, mouseY, delta);
     }
 
@@ -175,11 +206,15 @@ public class Window extends Screen {
 
             boolean selected = category == selectedCategory;
             boolean hovered = isInside(mouseX, mouseY, rowX1, rowY, rowX2, rowY2);
+            
+            float animFactor = selected ? categoryAnim : 1.0F;
             int fill = selected ? 0xFF2A7FE2 : (hovered ? 0xFF1B2433 : 0xFF121824);
             int text = selected ? 0xFFFFFFFF : 0xFFB7C0D1;
 
-            g.fill(rowX1, rowY, rowX2, rowY2, ColorUtil.multAlpha(fill, openAnim));
-            FontUtil.drawString(g, category.getDisplayName(), rowX1 + 6, rowY + 6, text, 0.85F, false);
+            g.fill(rowX1, rowY, rowX2, rowY2, ColorUtil.multAlpha(fill, openAnim * animFactor));
+            
+            float slideOffset = selected ? categorySlide : 0.0F;
+            FontUtil.drawString(g, category.getDisplayName(), rowX1 + 6 + slideOffset, rowY + 6, text, 0.85F, false);
 
             int count = ModuleManager.getInstance().getModules(category).size();
             FontUtil.drawString(g, String.valueOf(count), rowX2 - 14, rowY + 6, selected ? 0xFFFFFFFF : 0xFF73809A, 0.75F, false);
@@ -233,6 +268,9 @@ public class Window extends Screen {
         }
 
         float drawY = listY + 6.0F - scroll;
+        float slideOffset = categorySlide * 20.0F;
+        float fadeFactor = categoryAnim;
+        
         g.enableScissor(listX, listY, listX + listW, listBottom);
 
         for (Module module : modules) {
@@ -245,100 +283,111 @@ public class Window extends Screen {
             }
             if (drawY > listBottom) break;
 
-            renderModuleCard(g, mouseX, mouseY, listX + 6, drawY, listW - 12, module);
+            float moduleXOffset = (1.0F - fadeFactor) * slideOffset;
+            float moduleYOffset = (1.0F - fadeFactor) * 10.0F;
+            
+            renderModuleCard(g, mouseX, mouseY, listX + 6 + moduleXOffset, drawY + moduleYOffset, listW - 12, module, fadeFactor);
             drawY += cardHeight + MODULE_GAP;
         }
 
         g.disableScissor();
     }
 
-    private void renderModuleCard(GuiGraphics g, int mouseX, int mouseY, int x, float y, int w, Module module) {
+    private void renderModuleCard(GuiGraphics g, int mouseX, int mouseY, float x, float y, int w, Module module, float fadeFactor) {
+        int xInt = Math.round(x);
         int yInt = Math.round(y);
         int headerY2 = yInt + MODULE_HEADER_HEIGHT;
 
-        boolean headerHover = isInside(mouseX, mouseY, x, yInt, x + w, headerY2);
+        boolean headerHover = isInside(mouseX, mouseY, xInt, yInt, xInt + w, headerY2);
         boolean enabled = module.isEnabled();
         boolean expanded = expandedModules.contains(module) && !module.getSettings().isEmpty();
+
+        float expandAnim = moduleExpandAnimations.getOrDefault(module, expanded ? 1.0F : 0.0F);
 
         int header = enabled ? 0xFF245CA2 : (headerHover ? 0xFF1A2433 : 0xFF141B27);
         int border = enabled ? 0xFF4FA2FF : 0xFF2D374B;
 
-        g.fill(x - 1, yInt - 1, x + w + 1, yInt + getModuleCardHeight(module) + 1, ColorUtil.multAlpha(border, openAnim));
-        g.fill(x, yInt, x + w, headerY2, ColorUtil.multAlpha(header, openAnim));
+        int cardHeight = expanded ? getModuleCardHeight(module) : MODULE_HEADER_HEIGHT;
+        int animatedCardHeight = MODULE_HEADER_HEIGHT + (int) ((cardHeight - MODULE_HEADER_HEIGHT) * expandAnim);
 
-        FontUtil.drawString(g, module.getName(), x + 8, yInt + 7, 0xFFF3F6FC, 0.88F, false);
+        g.fill(xInt - 1, yInt - 1, xInt + w + 1, yInt + animatedCardHeight + 1, ColorUtil.multAlpha(border, openAnim * fadeFactor));
+        g.fill(xInt, yInt, xInt + w, headerY2, ColorUtil.multAlpha(header, openAnim * fadeFactor));
+
+        FontUtil.drawString(g, module.getName(), xInt + 8, yInt + 7, 0xFFF3F6FC, 0.88F, false);
 
         String state = enabled ? "ON" : "OFF";
         int stateBg = enabled ? 0xFF45C989 : 0xFF384357;
         int stateW = 26;
-        int stateX = x + w - stateW - 8;
-        g.fill(stateX, yInt + 5, stateX + stateW, yInt + 17, ColorUtil.multAlpha(stateBg, openAnim));
+        int stateX = xInt + w - stateW - 8;
+        g.fill(stateX, yInt + 5, stateX + stateW, yInt + 17, ColorUtil.multAlpha(stateBg, openAnim * fadeFactor));
         FontUtil.drawCentered(g, state, stateX + stateW / 2.0F, yInt + 8, 0xFFFFFFFF, 0.72F);
 
         String bindText = bindingModule == module ? "..." : getBindText(module.getKey());
         int bindColor = bindingModule == module ? 0xFFFFD36E : 0xFF8EA2C1;
         FontUtil.drawString(g, bindText, stateX - FontUtil.width(bindText) - 8, yInt + 8, bindColor, 0.72F, false);
 
-        if (!expanded) {
+        if (!expanded || expandAnim <= 0.01F) {
             return;
         }
+
+        g.fill(xInt, headerY2, xInt + w, headerY2 + (int) ((getModuleCardHeight(module) - MODULE_HEADER_HEIGHT) * expandAnim), ColorUtil.multAlpha(0xFF0F141D, openAnim * fadeFactor * expandAnim));
 
         float settingY = headerY2 + 4.0F;
         for (Setting<?> setting : module.getSettings()) {
             if (setting instanceof SliderSetting slider) {
-                renderSliderSetting(g, x + 5, settingY, w - 10, slider);
+                renderSliderSetting(g, xInt + 5, settingY, w - 10, slider, fadeFactor * expandAnim);
                 settingY += 24.0F;
             } else if (setting instanceof BooleanSetting bool) {
-                renderBooleanSetting(g, x + 5, settingY, w - 10, bool);
+                renderBooleanSetting(g, xInt + 5, settingY, w - 10, bool, fadeFactor * expandAnim);
                 settingY += 17.0F;
             } else if (setting instanceof ModeSetting mode) {
-                renderModeSetting(g, x + 5, settingY, w - 10, mode);
+                renderModeSetting(g, xInt + 5, settingY, w - 10, mode, fadeFactor * expandAnim);
                 settingY += 17.0F;
             } else if (setting instanceof ColorSetting color) {
-                renderColorSetting(g, x + 5, settingY, w - 10, color);
+                renderColorSetting(g, xInt + 5, settingY, w - 10, color, fadeFactor * expandAnim);
                 settingY += 17.0F;
             } else if (setting instanceof ModuleSetting moduleSetting) {
-                renderModuleSetting(g, x + 5, settingY, w - 10, moduleSetting);
+                renderModuleSetting(g, xInt + 5, settingY, w - 10, moduleSetting, fadeFactor * expandAnim);
                 settingY += 17.0F;
             }
         }
     }
 
-    private void renderBooleanSetting(GuiGraphics g, int x, float y, int w, BooleanSetting setting) {
+    private void renderBooleanSetting(GuiGraphics g, int x, float y, int w, BooleanSetting setting, float fadeFactor) {
         int yInt = Math.round(y);
-        g.fill(x, yInt, x + w, yInt + 14, ColorUtil.multAlpha(0xFF111827, openAnim));
+        g.fill(x, yInt, x + w, yInt + 14, ColorUtil.multAlpha(0xFF111827, openAnim * fadeFactor));
 
         int swX = x + w - 24;
         int swColor = setting.get() ? 0xFF40C98B : 0xFF3A4355;
-        g.fill(swX, yInt + 3, swX + 18, yInt + 11, ColorUtil.multAlpha(swColor, openAnim));
+        g.fill(swX, yInt + 3, swX + 18, yInt + 11, ColorUtil.multAlpha(swColor, openAnim * fadeFactor));
 
         int knobX = setting.get() ? swX + 11 : swX + 3;
-        g.fill(knobX, yInt + 4, knobX + 4, yInt + 10, ColorUtil.multAlpha(0xFFF5F8FF, openAnim));
+        g.fill(knobX, yInt + 4, knobX + 4, yInt + 10, ColorUtil.multAlpha(0xFFF5F8FF, openAnim * fadeFactor));
 
         FontUtil.drawString(g, setting.getName(), x + 5, yInt + 4, 0xFFCED7E8, 0.78F, false);
     }
 
-    private void renderModeSetting(GuiGraphics g, int x, float y, int w, ModeSetting setting) {
+    private void renderModeSetting(GuiGraphics g, int x, float y, int w, ModeSetting setting, float fadeFactor) {
         int yInt = Math.round(y);
-        g.fill(x, yInt, x + w, yInt + 14, ColorUtil.multAlpha(0xFF111827, openAnim));
+        g.fill(x, yInt, x + w, yInt + 14, ColorUtil.multAlpha(0xFF111827, openAnim * fadeFactor));
         FontUtil.drawString(g, setting.getName(), x + 5, yInt + 4, 0xFFCED7E8, 0.78F, false);
         FontUtil.drawString(g, setting.get(), x + w - FontUtil.width(setting.get()) - 8, yInt + 4, 0xFF6FC1FF, 0.78F, false);
     }
 
-    private void renderColorSetting(GuiGraphics g, int x, float y, int w, ColorSetting setting) {
+    private void renderColorSetting(GuiGraphics g, int x, float y, int w, ColorSetting setting, float fadeFactor) {
         int yInt = Math.round(y);
-        g.fill(x, yInt, x + w, yInt + 14, ColorUtil.multAlpha(0xFF111827, openAnim));
+        g.fill(x, yInt, x + w, yInt + 14, ColorUtil.multAlpha(0xFF111827, openAnim * fadeFactor));
         FontUtil.drawString(g, setting.getName(), x + 5, yInt + 4, 0xFFCED7E8, 0.78F, false);
 
         int color = setting.get() == null ? 0xFFFFFFFF : setting.get();
         int boxX = x + w - 20;
-        g.fill(boxX, yInt + 3, boxX + 14, yInt + 11, ColorUtil.multAlpha(0xFF2D3647, openAnim));
-        g.fill(boxX + 1, yInt + 4, boxX + 13, yInt + 10, ColorUtil.multAlpha(color, openAnim));
+        g.fill(boxX, yInt + 3, boxX + 14, yInt + 11, ColorUtil.multAlpha(0xFF2D3647, openAnim * fadeFactor));
+        g.fill(boxX + 1, yInt + 4, boxX + 13, yInt + 10, ColorUtil.multAlpha(color, openAnim * fadeFactor));
     }
 
-    private void renderModuleSetting(GuiGraphics g, int x, float y, int w, ModuleSetting setting) {
+    private void renderModuleSetting(GuiGraphics g, int x, float y, int w, ModuleSetting setting, float fadeFactor) {
         int yInt = Math.round(y);
-        g.fill(x, yInt, x + w, yInt + 14, ColorUtil.multAlpha(0xFF111827, openAnim));
+        g.fill(x, yInt, x + w, yInt + 14, ColorUtil.multAlpha(0xFF111827, openAnim * fadeFactor));
 
         Module linked = setting.get();
         String state = linked != null && linked.isEnabled() ? "ON" : "OFF";
@@ -348,9 +397,9 @@ public class Window extends Screen {
         FontUtil.drawString(g, state, x + w - 20, yInt + 4, stateColor, 0.78F, false);
     }
 
-    private void renderSliderSetting(GuiGraphics g, int x, float y, int w, SliderSetting setting) {
+    private void renderSliderSetting(GuiGraphics g, int x, float y, int w, SliderSetting setting, float fadeFactor) {
         int yInt = Math.round(y);
-        g.fill(x, yInt, x + w, yInt + 20, ColorUtil.multAlpha(0xFF111827, openAnim));
+        g.fill(x, yInt, x + w, yInt + 20, ColorUtil.multAlpha(0xFF111827, openAnim * fadeFactor));
 
         String value = formatSliderValue(setting);
         FontUtil.drawString(g, setting.getName(), x + 5, yInt + 3, 0xFFCED7E8, 0.78F, false);
@@ -360,15 +409,15 @@ public class Window extends Screen {
         int barW = w - 12;
         int barY = yInt + 13;
 
-        g.fill(barX, barY, barX + barW, barY + 3, ColorUtil.multAlpha(0xFF2A3345, openAnim));
+        g.fill(barX, barY, barX + barW, barY + 3, ColorUtil.multAlpha(0xFF2A3345, openAnim * fadeFactor));
         float pct = (float) ((setting.get() - setting.getMin()) / (setting.getMax() - setting.getMin()));
         pct = Mth.clamp(pct, 0.0F, 1.0F);
 
         int fill = (int) (barW * pct);
-        g.fill(barX, barY, barX + fill, barY + 3, ColorUtil.multAlpha(ACCENT_COLOR, openAnim));
+        g.fill(barX, barY, barX + fill, barY + 3, ColorUtil.multAlpha(ACCENT_COLOR, openAnim * fadeFactor));
 
         int knobX = barX + fill;
-        g.fill(knobX - 1, barY - 2, knobX + 1, barY + 5, ColorUtil.multAlpha(0xFFFFFFFF, openAnim));
+        g.fill(knobX - 1, barY - 2, knobX + 1, barY + 5, ColorUtil.multAlpha(0xFFFFFFFF, openAnim * fadeFactor));
     }
 
     @Override
@@ -493,7 +542,7 @@ public class Window extends Screen {
                 targetScroll = 0.0F;
                 return true;
             }
-            mc.setScreen(null);
+            onClose();
             return true;
         }
 
@@ -541,7 +590,12 @@ public class Window extends Screen {
             int rowY2 = rowY + CATEGORY_ROW_HEIGHT;
 
             if (isInside(mouseX, mouseY, rowX1, rowY, rowX2, rowY2)) {
-                selectedCategory = category;
+                if (category != selectedCategory) {
+                    previousCategory = selectedCategory;
+                    selectedCategory = category;
+                    categoryAnim = 0.0F;
+                    categorySlide = -8.0F;
+                }
                 targetScroll = 0.0F;
                 scroll = 0.0F;
                 return true;

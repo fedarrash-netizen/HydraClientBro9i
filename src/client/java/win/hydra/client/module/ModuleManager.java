@@ -4,7 +4,10 @@ import net.minecraft.client.Minecraft;
 import win.hydra.client.Client;
 import win.hydra.client.module.impl.combat.KillAura;
 import win.hydra.client.module.impl.hud.ClickGuiSettings;
+import win.hydra.client.module.impl.hud.Hud;
 import win.hydra.client.module.impl.movement.Flight;
+import win.hydra.client.module.impl.movement.HighJump;
+import win.hydra.client.module.impl.player.AutoTotem;
 import win.hydra.client.module.impl.player.GuiMove;
 import win.hydra.client.module.impl.misc.SelfDestruct;
 import win.hydra.client.screen.clickgui.Window;
@@ -47,25 +50,41 @@ public class ModuleManager {
         ClickGuiSettings clickGuiSettings = new ClickGuiSettings();
         modules.add(clickGuiSettings);
 
+        // Hud module
+        Hud hud = new Hud();
+        modules.add(hud);
+
         // Actual modules
         KillAura killAura = new KillAura();
         Flight flight = new Flight();
+        HighJump highJump = new HighJump();
         GuiMove guiMove = new GuiMove();
+        AutoTotem autoTotem = new AutoTotem();
         SelfDestruct selfDestruct = new SelfDestruct();
 
         modules.add(killAura);
         modules.add(flight);
+        modules.add(highJump);
         modules.add(guiMove);
+        modules.add(autoTotem);
         modules.add(selfDestruct);
 
         // Register modules that listen to events
+        Client.inst().eventBus().register(hud);
         Client.inst().eventBus().register(killAura);
         Client.inst().eventBus().register(flight);
+        Client.inst().eventBus().register(highJump);
         Client.inst().eventBus().register(guiMove);
+        Client.inst().eventBus().register(autoTotem);
         Client.inst().eventBus().register(selfDestruct);
+        Client.inst().eventBus().register(hud);
     }
 
     public List<Module> getModules() {
+        return Collections.unmodifiableList(modules);
+    }
+
+    public List<Module> getAllModules() {
         return Collections.unmodifiableList(modules);
     }
 
